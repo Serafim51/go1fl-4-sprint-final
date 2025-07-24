@@ -80,10 +80,10 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	}
 	switch trainingType {
 	case "Бег":
-		return fmt.Sprintf("Тип тренеровок: %s\nДлительность: %v ч.\n Дистанция: %f км.\nСкорость: %fкм/ч\nСожгли калорий: %f", trainingType, time, distance(steps, height), meanSpeed(steps, height, time), runCal), nil
+		return fmt.Sprintf("Тип тренеровок: %s\nДлительность: %v ч.\n Дистанция: %.2f км.\nСкорость: %.2fкм/ч\nСожгли калорий: %.2f", trainingType, time, distance(steps, height), meanSpeed(steps, height, time), runCal), nil
 
 	case "Шаг":
-		return fmt.Sprintf("Тип тренеровок: %s\nДлительность: %v ч.\n Дистанция: %f км.\nСкорость: %fкм/ч\nСожгли калорий: %f", trainingType, time, distance(steps, height), meanSpeed(steps, height, time), walkCal), nil
+		return fmt.Sprintf("Тип тренеровок: %s\nДлительность: %v ч.\n Дистанция: %.2f км.\nСкорость: %.2fкм/ч\nСожгли калорий: %.2f", trainingType, time, distance(steps, height), meanSpeed(steps, height, time), walkCal), nil
 	default:
 		return "", fmt.Errorf("%w: ", ErrInvalidTriningType)
 	}

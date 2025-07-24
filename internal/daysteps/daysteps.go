@@ -62,6 +62,6 @@ func DayActionInfo(data string, weight, height float64) string {
 	}
 	//определить количество калорий после реализации соответствующей функции -  в процессе
 
-	return fmt.Sprintf("Количество шагов: %d.\nДистанция составила %f км.\nВы сожгли %f ккал.", steps, distant, calories) //переменная calories будет объявлена позднее
+	return fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.\n", steps, distant, calories) //переменная calories будет объявлена позднее
 
 }
