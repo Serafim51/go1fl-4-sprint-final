@@ -32,7 +32,7 @@ var (
 func parseTraining(data string) (int, string, time.Duration, error) {
 	// TODO: реализовать функцию
 	units := strings.Split(data, ",") // разделение строки на слайс строк
-	if len(units) != 2 {              // проверка длины слайса
+	if len(units) != 3 {              // проверка длины слайса
 		return 0, "", 0, fmt.Errorf("%w: ожидаемый формат 'число,строка,время'", ErrInvalidFormat) //проверка соответствия формату
 	}
 	number, err := strconv.Atoi(units[0])
@@ -42,7 +42,7 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 		return 0, "", 0, fmt.Errorf("%w: %v", ErrZeroSteps, err)
 	}
 	time, err := time.ParseDuration(units[2])
-	if err != nil { //проверка формата времени
+	if err != nil || time <= 0 { //проверка формата времени
 		return 0, "", 0, fmt.Errorf("%w: %v", ErrTimeParsing, err)
 	}
 	return number, units[1], time, nil //units[1] - тип тренеровки
@@ -80,10 +80,10 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	}
 	switch trainingType {
 	case "Бег":
-		return fmt.Sprintf("Тип тренеровок: %s\nДлительность: %v ч.\n Дистанция: %.2f км.\nСкорость: %.2fкм/ч\nСожгли калорий: %.2f", trainingType, time, distance(steps, height), meanSpeed(steps, height, time), runCal), nil
+		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, time.Hours(), distance(steps, height), meanSpeed(steps, height, time), runCal), nil
 
-	case "Шаг":
-		return fmt.Sprintf("Тип тренеровок: %s\nДлительность: %v ч.\n Дистанция: %.2f км.\nСкорость: %.2fкм/ч\nСожгли калорий: %.2f", trainingType, time, distance(steps, height), meanSpeed(steps, height, time), walkCal), nil
+	case "Ходьба":
+		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, time.Hours(), distance(steps, height), meanSpeed(steps, height, time), walkCal), nil
 	default:
 		return "", fmt.Errorf("%w: ", ErrInvalidTriningType)
 	}

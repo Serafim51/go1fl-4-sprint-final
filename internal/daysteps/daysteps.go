@@ -3,6 +3,7 @@ package daysteps
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -38,7 +39,7 @@ func parsePackage(data string) (int, time.Duration, error) {
 		return 0, 0, fmt.Errorf("%w: количество шагов должно быть больше 0", ErrZeroSteps)
 	}
 	time, err := time.ParseDuration(units[1])
-	if err != nil {
+	if err != nil || time <= 0 {
 		return 0, 0, fmt.Errorf("%w: %v", ErrTimeParsing, err)
 	}
 	return number, time, nil
@@ -48,7 +49,7 @@ func DayActionInfo(data string, weight, height float64) string {
 	// TODO: реализовать функцию
 	steps, walkTIme, err := parsePackage(data)
 	if err != nil { //определение ошибки
-		fmt.Println(err)
+		log.Println(err)
 		return ""
 	}
 	if steps <= 0 { //если не верное количество ошибок - вернуть пустую строку
@@ -57,7 +58,7 @@ func DayActionInfo(data string, weight, height float64) string {
 	distant := (float64(steps) * stepLength) / mInKm
 	calories, err := spentcalories.WalkingSpentCalories(steps, weight, height, walkTIme)
 	if err != nil { //определение ошибки
-		fmt.Println(err)
+		log.Println(err)
 		return ""
 	}
 	//определить количество калорий после реализации соответствующей функции -  в процессе
