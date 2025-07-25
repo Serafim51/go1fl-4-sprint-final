@@ -19,31 +19,33 @@ const (
 )
 
 var (
-	ErrInvalidFormat      = errors.New("ошибка формата данных")
-	ErrNumberParsing      = errors.New("ошибка получания числа шагов")
-	ErrTimeParsing        = errors.New("ошибка получения значения времени")
-	ErrZeroSteps          = errors.New("количество шагов меньше или равно 0")
-	ErrDuration           = errors.New("ошибка формата, либо продолжительность < 0")
-	ErrUnknownType        = errors.New("тип переменной не соответствует")
-	ErrInvalidInput       = errors.New("ошибка входных данных")
-	ErrInvalidTriningType = errors.New("неизвестный тип тренировки")
+	errInvalidFormat      = errors.New("invalid data format")
+	errNumberParsing      = errors.New("failed to parse step count")
+	errTimeParsing        = errors.New("failed to parse time value")
+	errZeroSteps          = errors.New("step count must be greater than 0")
+	errDuration           = errors.New("invalid format or duration <= 0")
+	errInvalidInput       = errors.New("invalid input data")
+	errInvalidTriningType = errors.New("неизвестный тип тренировки")
 )
 
 func parseTraining(data string) (int, string, time.Duration, error) {
 	// TODO: реализовать функцию
 	units := strings.Split(data, ",") // разделение строки на слайс строк
 	if len(units) != 3 {              // проверка длины слайса
-		return 0, "", 0, fmt.Errorf("%w: ожидаемый формат 'число,строка,время'", ErrInvalidFormat) //проверка соответствия формату
+		return 0, "", 0, fmt.Errorf("%w: expected format - 'number,string,duration'", errInvalidFormat) //проверка соответствия формату
 	}
 	number, err := strconv.Atoi(units[0])
 	if err != nil { //проверка преобразования строки в число (количество шагов)
-		return 0, "", 0, fmt.Errorf("%w: %v", ErrNumberParsing, err)
+		return 0, "", 0, fmt.Errorf("%w: %v", errNumberParsing, err)
 	} else if number <= 0 { //проверка шагов на > 0
-		return 0, "", 0, fmt.Errorf("%w: %v", ErrZeroSteps, err)
+		return 0, "", 0, fmt.Errorf("%w: %v", errZeroSteps, err)
 	}
 	time, err := time.ParseDuration(units[2])
-	if err != nil || time <= 0 { //проверка формата времени
-		return 0, "", 0, fmt.Errorf("%w: %v", ErrTimeParsing, err)
+	if err != nil { //проверка формата времени
+		return 0, "", 0, fmt.Errorf("%w: %v", errTimeParsing, err)
+	}
+	if time <= 0 { //проверка формата времени
+		return 0, "", 0, fmt.Errorf("%w: %v", errDuration, err)
 	}
 	return number, units[1], time, nil //units[1] - тип тренеровки
 }
@@ -68,24 +70,28 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	// TODO: реализовать функцию
 	steps, trainingType, time, err := parseTraining(data)
 	if err != nil {
-		log.Println(err) //логирование ошибки
+		log.Println(err) // При ошибке логируем и прерываем выполнение, чтобы не обрабатывать некорректные данные
+		return "", err
 	}
-	runCal, err := RunningSpentCalories(steps, weight, height, time)
-	if err != nil {
-		log.Println(err) //логирование ошибки
-	}
-	walkCal, err := WalkingSpentCalories(steps, weight, height, time)
-	if err != nil {
-		log.Println(err) //логирование ошибки
-	}
+
 	switch trainingType {
 	case "Бег":
+		runCal, err := RunningSpentCalories(steps, weight, height, time)
+		if err != nil {
+			log.Println(err) // При ошибке логируем и прерываем выполнение, чтобы не обрабатывать некорректные данные
+			return "", err
+		}
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, time.Hours(), distance(steps, height), meanSpeed(steps, height, time), runCal), nil
 
 	case "Ходьба":
+		walkCal, err := WalkingSpentCalories(steps, weight, height, time)
+		if err != nil {
+			log.Println(err) // При ошибке логируем и прерываем выполнение, чтобы не обрабатывать некорректные данные
+			return "", err
+		}
 		return fmt.Sprintf("Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f\n", trainingType, time.Hours(), distance(steps, height), meanSpeed(steps, height, time), walkCal), nil
 	default:
-		return "", fmt.Errorf("%w: ", ErrInvalidTriningType)
+		return "", fmt.Errorf("%w: ", errInvalidTriningType)
 	}
 }
 
@@ -93,16 +99,16 @@ func RunningSpentCalories(steps int, weight, height float64, duration time.Durat
 	// TODO: реализовать функцию
 	//реализация возможных ошибок
 	if steps <= 0 {
-		return 0, fmt.Errorf("%w: число шагов должно быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: step count must be greater than 0", errInvalidInput)
 	}
 	if weight <= 0 {
-		return 0, fmt.Errorf("%w: вес должен быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: weight must be greater than 0", errInvalidInput)
 	}
 	if height <= 0 {
-		return 0, fmt.Errorf("%w: рост должен быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: height must be greater than 0", errInvalidInput)
 	}
 	if duration <= 0 {
-		return 0, fmt.Errorf("%w: длительность тренеровки должна быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: training duration must be greater than 0", errInvalidInput)
 	}
 	// реализация функции ** для себя** - требует теста
 	return weight * meanSpeed(steps, height, duration) * duration.Minutes() / minInH, nil
@@ -111,16 +117,16 @@ func RunningSpentCalories(steps int, weight, height float64, duration time.Durat
 func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
 	// TODO: реализовать функцию
 	if steps <= 0 {
-		return 0, fmt.Errorf("%w: число шагов должно быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: step count must be greater than 0", errInvalidInput)
 	}
 	if weight <= 0 {
-		return 0, fmt.Errorf("%w: вес должен быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: weight must be greater than 0", errInvalidInput)
 	}
 	if height <= 0 {
-		return 0, fmt.Errorf("%w: рост должен быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: height must be greater than 0", errInvalidInput)
 	}
 	if duration <= 0 {
-		return 0, fmt.Errorf("%w: длительность тренеровки должна быть больше 0", ErrInvalidInput)
+		return 0, fmt.Errorf("%w: training duration must be greater than 0", errInvalidInput)
 	}
 	// реализация функции ** для себя** - требует теста
 	return weight * meanSpeed(steps, height, duration) * duration.Minutes() / minInH * walkingCaloriesCoefficient, nil

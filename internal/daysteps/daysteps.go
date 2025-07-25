@@ -19,28 +19,32 @@ const (
 )
 
 var (
-	ErrInvalidFormat = errors.New("ошибка формата данных")
-	ErrNumberParsing = errors.New("ошибка получания числа шагов")
-	ErrTimeParsing   = errors.New("ошибка получения значения времени")
-	ErrZeroSteps     = errors.New("количество шагов <= 0")
+	errInvalidFormat = errors.New("data format error")
+	errNumberParsing = errors.New("step count retrieval error")
+	errTimeParsing   = errors.New("time value retrieval error")
+	errZeroSteps     = errors.New("step count <= 0")
+	errTimeZero      = errors.New("time value <= 0")
 )
 
 func parsePackage(data string) (int, time.Duration, error) {
 	// TODO: реализовать функцию
 	units := strings.Split(data, ",") // разделение строки data на слайс строк
 	if len(units) != 2 {              // проверка длины слайса
-		return 0, 0, fmt.Errorf("%w: ожидаемый формат 'число,время'", ErrInvalidFormat)
+		return 0, 0, fmt.Errorf("%w: expected format - 'number,duration'", errInvalidFormat)
 	}
 	number, err := strconv.Atoi(units[0])
 	if err != nil {
-		return 0, 0, fmt.Errorf("%w: %v", ErrNumberParsing, err)
+		return 0, 0, fmt.Errorf("%w: %v", errNumberParsing, err)
 	}
 	if number <= 0 { //Проверка количества шагов
-		return 0, 0, fmt.Errorf("%w: количество шагов должно быть больше 0", ErrZeroSteps)
+		return 0, 0, fmt.Errorf("%w: step count must be greater than 0", errZeroSteps)
 	}
 	time, err := time.ParseDuration(units[1])
-	if err != nil || time <= 0 {
-		return 0, 0, fmt.Errorf("%w: %v", ErrTimeParsing, err)
+	if err != nil {
+		return 0, 0, fmt.Errorf("%w: %v", errTimeParsing, err)
+	}
+	if time <= 0 {
+		return 0, 0, fmt.Errorf("%w: %v", errTimeZero, err)
 	}
 	return number, time, nil
 }
@@ -61,8 +65,7 @@ func DayActionInfo(data string, weight, height float64) string {
 		log.Println(err)
 		return ""
 	}
-	//определить количество калорий после реализации соответствующей функции -  в процессе
 
-	return fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.\n", steps, distant, calories) //переменная calories будет объявлена позднее
+	return fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.\n", steps, distant, calories)
 
 }
